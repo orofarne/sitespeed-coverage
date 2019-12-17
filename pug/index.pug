@@ -1,0 +1,57 @@
+mixin rowHeading(items)
+  thead
+    tr
+      each item in items
+        th= item
+
+mixin sizeCell(title, size)
+  td.number(data-title=title, data-value=size)= h.size.format(size)
+
+mixin coverageCell(title, cov)
+  td(data-title=title, data-value=cov)
+    meter(value=cov, min=0, max=100, low=25, high=50, optimum=75)
+    span(style="padding-left: 0.5em;") #{cov.toFixed(2)} %
+
+mixin urlCell(title, url)
+  - var urlMaxLength = 80
+  td(data-title=title, data-value=url)
+    a(href=url, target="_blank")= url.length > urlMaxLength ? url.substring(0, urlMaxLength - 3) + "..." : url
+
+mixin textCell(title, text)
+  td(data-title=title, data-value=text)= text
+
+a
+h2 Coverage
+
+- var coverageSummary = pageInfo.data.coverage.pageSummary
+
+//- This is how you can see all the content sent from coverage
+//- p #{JSON.stringify(pageInfo.data.coverage.pageSummary)}
+
+if coverageSummary.page
+  h3 Page results
+  .responsive
+    table(data-sortable, id='Coverage #{key}')
+      +rowHeading(['Type', 'Coverage', 'Total bytes', 'Unused bytes'])
+      tbody
+        each key in ['js', 'css']
+          if coverageSummary.page[key]
+            tr
+              +textCell('Type', key.toUpperCase())
+              +coverageCell('Coverage', coverageSummary.page[key].usedPercentage)
+              +sizeCell('Total bytes', coverageSummary.page[key].totalBytes)
+              +sizeCell('Unused bytes', coverageSummary.page[key].unusedBytes)
+
+each key in ['js', 'css']
+  if coverageSummary[key]
+    h3 #{key.toUpperCase()}
+    .responsive
+      table(data-sortable, id='Coverage #{key}')
+        +rowHeading(['URL', 'Coverage', 'Total bytes', 'Unused bytes'])
+        tbody
+          each item in coverageSummary[key]
+            tr
+              +urlCell('URL', item.url)
+              +coverageCell('Coverage', item.usedPercentage)
+              +sizeCell('Total bytes', item.totalBytes)
+              +sizeCell('Unused bytes', item.unusedBytes)
